@@ -1,5 +1,8 @@
-from nara import nara
-
+from nara_crowler import nara
+from coupang_crowler import coupang
 
 nara_instance = nara()
-nara_instance.excute(nara_instance.URL)
+coupang_ins = coupang()
+print("main1")
+coupang_ins.excute(coupang_ins.URL,coupang_ins.header)
+print("main2")
