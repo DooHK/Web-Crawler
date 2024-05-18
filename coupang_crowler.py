@@ -4,6 +4,8 @@ import requests
 import time
 import csv
 import random
+from selenium import webdriver
+import pandas as pd
 # from request import request
 
 class coupang(Crowler):
@@ -149,10 +151,16 @@ class coupang(Crowler):
             ]
         )
 
-    def excute(self):
-        keyword = input("Enter product: ")
-        page_num = 1
-
+    def excute(self,mall_name:str, keyword:str,sorting_type:str,total_page:int,is_exel:bool):
+        #판매량 순 or default
+        if sorting_type == "판매량 순":
+            url = f"https://www.coupang.com/np/search?rocketAll=false&searchId=41e6c4846ffd4eb2953c13ba69d61a6d&q={keyword}&brand=&offerCondition=&filter=&availableDeliveryFilter=&filterType=&isPriceRange=false&priceRange=&minPrice=&maxPrice=&page={page_num}&trcid=&traid=&filterSetByUser=true&channel=&backgroundColor=&searchProductCount=798215&component=&rating=0&sorter=saleCountDesc&listSize=72"
+        elif sorting_type == "쿠팡 추천순":
+            url = f"https://www.coupang.com/np/search?component=&q={keyword}&page={page_num}&listSize=72"
+        else:
+            print("타입을 설정해주세요")
+            return
+        
         link_list = []
 
         with open(
@@ -160,8 +168,9 @@ class coupang(Crowler):
         ) as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(["Name", "Price", "Link", "Img_url"])
-            for page_num in range(1, 4):
-                url = f"https://www.coupang.com/np/search?component=&q={keyword}&page={page_num}&listSize=72"
+            
+            for page_num in range(1, total_page): ##실험을 위해 임의로 2로 설정
+                
                 if not page_num:
                     break
                 print(page_num)
@@ -188,4 +197,18 @@ class coupang(Crowler):
                 self.pdp(url,self.header,writer)
                 print()
 
+        #엑셀로 저장할건지의 여부
+        if is_exel == True:
+            # 결과를 DataFrame으로 저장
+            df = pd.DataFrame(link_list, columns=["Link"])
+            
+            # Excel 파일로 저장
+            excel_file_name = f"coupang_discovery_{keyword}.xlsx"
+            df.to_excel(excel_file_name, index=False)
+
+            with pd.ExcelWriter(excel_file_name) as writer:
+                df.to_excel(writer, index=False)
+                writer.save()
+
+            print(f"엑셀파일 {excel_file_name} 저장되었습니다.")
         print("finished")
