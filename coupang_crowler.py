@@ -6,6 +6,7 @@ import csv
 import random
 from selenium import webdriver
 import pandas as pd
+import queue
 # from request import request
 
 class coupang(Crowler):
@@ -152,14 +153,7 @@ class coupang(Crowler):
         )
 
     def excute(self,mall_name:str, keyword:str,sorting_type:str,total_page:int,is_exel:bool):
-        #판매량 순 or default
-        if sorting_type == "판매량 순":
-            url = f"https://www.coupang.com/np/search?rocketAll=false&searchId=41e6c4846ffd4eb2953c13ba69d61a6d&q={keyword}&brand=&offerCondition=&filter=&availableDeliveryFilter=&filterType=&isPriceRange=false&priceRange=&minPrice=&maxPrice=&page={page_num}&trcid=&traid=&filterSetByUser=true&channel=&backgroundColor=&searchProductCount=798215&component=&rating=0&sorter=saleCountDesc&listSize=72"
-        elif sorting_type == "쿠팡 추천순":
-            url = f"https://www.coupang.com/np/search?component=&q={keyword}&page={page_num}&listSize=72"
-        else:
-            print("타입을 설정해주세요")
-            return
+        
         
         link_list = []
 
@@ -169,8 +163,11 @@ class coupang(Crowler):
             writer = csv.writer(csvfile)
             writer.writerow(["Name", "Price", "Link", "Img_url"])
             
-            for page_num in range(1, total_page): ##실험을 위해 임의로 2로 설정
-                
+            for page_num in range(1, total_page+1):
+                if sorting_type == "판매량 순":
+                    url = f"https://www.coupang.com/np/search?rocketAll=false&searchId=41e6c4846ffd4eb2953c13ba69d61a6d&q={keyword}&brand=&offerCondition=&filter=&availableDeliveryFilter=&filterType=&isPriceRange=false&priceRange=&minPrice=&maxPrice=&page={page_num}&trcid=&traid=&filterSetByUser=true&channel=&backgroundColor=&searchProductCount=798215&component=&rating=0&sorter=saleCountDesc&listSize=72"
+                elif sorting_type == "쿠팡 추천순":
+                    url = f"https://www.coupang.com/np/search?component=&q={keyword}&page={page_num}&listSize=72"
                 if not page_num:
                     break
                 print(page_num)
@@ -180,16 +177,21 @@ class coupang(Crowler):
                 link_list += self.request(page_num, url,self.header,writer)
 
         print(link_list)
-        print(f"{len(link_list)}개 {keyword} 상제페이지 스크랩 시작")
+        
+        time.sleep(1)
+        print(f"{len(link_list)}개 {keyword} 상세페이지 스크랩 시작")
+       
         print()
 
-        
+        print(1111)
         with open(f"coupang_pdp_{keyword}.csv", "w", newline="", encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile)
+            print(2222)
             writer.writerow(
                 ["브랜드", "제품명", "현재 판매가", "회원 할인가", "판매자", "다른 판매자", "옵션", "상세정보", "URL"]
             )
-            for e, url in enumerate(link_list, 1):
+            print(3333)
+            for e, url in enumerate(link_list,1):
                 sleeptime= random.uniform(3,6)
                 time.sleep(sleeptime)
                 print(f"<<<<<{e}>>>>>")
