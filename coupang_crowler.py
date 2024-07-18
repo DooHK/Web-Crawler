@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from PySide6 import QtWidgets, QtCore
 from crowler import Crowler
 import requests
 import time
@@ -7,6 +8,7 @@ import random
 from selenium import webdriver
 import pandas as pd
 import queue
+import threading
 # from request import request
 
 class coupang(Crowler):
@@ -60,7 +62,7 @@ class coupang(Crowler):
 
         return link_list
             
-    def pdp(self,url,header,writer):
+    def pdp(self,url,header,writer,instance):
         response = requests.get(url, headers=header)
         html = response.text
         soup = BeautifulSoup(html, "html.parser")
@@ -115,6 +117,7 @@ class coupang(Crowler):
             prod_info_text += f", 다른 판매자: {prod_other_seller_count}"
 
         print(prod_info_text)
+        instance.update_log(prod_info_text)
 
         # 옵션
         if prod_option_item:
@@ -125,6 +128,7 @@ class coupang(Crowler):
                 )
             prod_option_item = ", ".join(option_list)
             print(prod_option_item)
+            # instance.log_text.append(prod_option_item)
         else:
             prod_option_item = None
 
@@ -135,6 +139,7 @@ class coupang(Crowler):
                 description_list.append(text.string)
             prod_description = ", ".join(description_list)
             print(prod_description)
+            # instance.log_text.append(prod_description)
         else:
             prod_description = None
 
@@ -152,7 +157,7 @@ class coupang(Crowler):
             ]
         )
 
-    def excute(self,mall_name:str, keyword:str,sorting_type:str,total_page:int,is_exel:bool):
+    def excute(self,mall_name:str, keyword:str,sorting_type:str,total_page:int,is_exel:bool, instance ):
         
         
         link_list = []
@@ -195,9 +200,14 @@ class coupang(Crowler):
                 sleeptime= random.uniform(3,6)
                 time.sleep(sleeptime)
                 print(f"<<<<<{e}>>>>>")
+                instance.log_text.append(f"<<<<<{e}>>>>>") ##인터페이스 logging
                 print(url)
-                self.pdp(url,self.header,writer)
+                instance.log_text.append(url)
+                pdp_thread = threading.Thread(target=self.pdp, args=(url,self.header,writer,instance))
+                pdp_thread.start()
+                # pdp_thread.join()
                 print()
+                instance.log_text.append("\n")
 
         #엑셀로 저장할건지의 여부
         if is_exel == True:

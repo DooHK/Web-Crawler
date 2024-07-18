@@ -148,11 +148,11 @@ class ShoppingMallSearchApp(QtWidgets.QMainWindow):
         sort_method = "쿠팡 추천순" if self.recommended_radio.isChecked() else "판매량 순"
         page_count = self.page_count_input.value()
         save_to_excel = self.save_excel_checkbox.isChecked()
-        self.log_text.append("1234")
+        
 
         
         # 스레드 생성 및 시작
-        search_thread = threading.Thread(target=self.coupang_ins.excute, args=(mall_name, keyword, sort_method, page_count, save_to_excel))
+        search_thread = threading.Thread(target=self.coupang_ins.excute, args=(mall_name, keyword, sort_method, page_count, save_to_excel, self))
         search_thread.start()
         self.update_log(f"{sort_method}으로 {keyword}을 검색.")
         # join을 사용하면 interface가 안움직임 
